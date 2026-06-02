@@ -1,28 +1,13 @@
 pipeline {
     agent any
-
-    environment {
-        IMAGE_NAME = "flask-cicd-app"
-    }
-
+    
     stages {
-
-        
-
-
-        stage('Build Docker Image') {
+        stage('Test') {
             steps {
-                sh 'docker build -t $IMAGE_NAME .'
-            }
-        }
-
-        stage('Deploy Container') {
-            steps {
-                sh '''
-                docker stop flask-app || true
-                docker rm flask-app || true
-                docker run -d --name flask-app -p 5000:5000 $IMAGE_NAME
-                '''
+                echo 'Git checkout works!'
+                echo 'Pipeline is running successfully!'
+                sh 'ls -la'
+                sh 'pwd'
             }
         }
     }
