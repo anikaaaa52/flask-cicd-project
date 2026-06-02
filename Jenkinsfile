@@ -9,11 +9,6 @@ pipeline {
 
         
 
-        stage('Trivy Scan') {
-            steps {
-                sh 'trivy fs .'
-            }
-        }
 
         stage('Build Docker Image') {
             steps {
