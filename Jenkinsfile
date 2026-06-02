@@ -7,11 +7,7 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/anikaaaa52/flask-cicd-project.git'
-            }
-        }
+        
 
         stage('Trivy Scan') {
             steps {
