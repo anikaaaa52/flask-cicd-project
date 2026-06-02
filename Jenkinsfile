@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "flask-cicd-app"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/anikaaaa52/flask-cicd-project.git'
+            }
+        }
+
+        stage('Trivy Scan') {
+            steps {
+                sh 'trivy fs .'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $IMAGE_NAME .'
+            }
+        }
+
+        stage('Deploy Container') {
+            steps {
+                sh '''
+                docker stop flask-app || true
+                docker rm flask-app || true
+                docker run -d --name flask-app -p 5000:5000 $IMAGE_NAME
+                '''
+            }
+        }
+    }
+}
