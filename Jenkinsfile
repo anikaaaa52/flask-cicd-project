@@ -2,49 +2,61 @@ pipeline {
     agent any
     
     environment {
-        IMAGE_NAME = "flask-cicd-app"
-        IMAGE_TAG = "${BUILD_NUMBER}"
+        IMAGE_NAME = "anikaaa/flask-cicd"
+        IMAGE_TAG = "latest"
     }
     
     stages {
-        stage('Checkout') {
+        stage('Clone Repo') {
             steps {
-                echo 'Git checkout works!'
-                sh 'ls -la'
+                git branch: 'main', url: 'https://github.com/anikaaaa52/flask-cicd-project.git'
+            }
+        }
+        
+        stage('Trivy FS Scan') {
+            steps {
+                sh 'trivy fs --exit-code 0 --severity HIGH,CRITICAL .'
             }
         }
         
         stage('Build Docker Image') {
             steps {
-                echo 'Building Docker image...'
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
-                sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest"
+                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
             }
         }
         
-        stage('Trivy Scan') {
+        stage('Trivy Image Scan') {
             steps {
-                echo 'Scanning image for vulnerabilities...'
-                sh "trivy image --exit-code 0 --severity HIGH,CRITICAL ${IMAGE_NAME}:${IMAGE_TAG}"
+                sh 'trivy image --exit-code 0 --severity HIGH,CRITICAL $IMAGE_NAME:$IMAGE_TAG'
             }
         }
         
-        stage('Test Container') {
+        stage('Push to Docker Hub') {
             steps {
-                echo 'Running container to test...'
-                sh "docker run -d -p 5001:5000 --name test-container ${IMAGE_NAME}:${IMAGE_TAG}"
-                sh 'sleep 5'
-                sh 'curl -f http://localhost:5001 || exit 1'
-                sh 'docker stop test-container'
-                sh 'docker rm test-container'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker push $IMAGE_NAME:$IMAGE_TAG
+                        docker logout
+                    '''
+                }
+            }
+        }
+        
+        stage('Deploy Container') {
+            steps {
+                sh '''
+                    docker stop flask-app || true
+                    docker rm flask-app || true
+                    docker run -d --name flask-app -p 5000:5000 $IMAGE_NAME:$IMAGE_TAG
+                '''
             }
         }
     }
     
     post {
         always {
-            sh 'docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true'
-            sh 'docker rmi ${IMAGE_NAME}:latest || true'
+            sh 'docker image prune -f'
         }
     }
 }
