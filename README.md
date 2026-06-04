@@ -4,9 +4,9 @@
 
 ---
 
-## =====================================================================
+## ====================================
 ## ★ PROJECT OVERVIEW
-## =====================================================================
+## ====================================
 
 This project demonstrates the implementation of a complete CI/CD (Continuous Integration and Continuous Deployment) pipeline using Jenkins, GitHub, Docker, SonarQube, Trivy, and Flask.
 
@@ -20,10 +20,10 @@ This project helped develop hands-on experience with DevOps workflows, CI/CD aut
 
 ---
 
-## =====================================================================
+## =====================================
 ## ★ PROJECT OBJECTIVES
-## =====================================================================
 
+## =====================================
 The main objectives of this project were:
 
 - Implement a complete CI/CD pipeline using Jenkins
